@@ -48,15 +48,17 @@ class dayView extends \arcec\Agenda\agendaViewer implements \wp\Tpl\template,\wp
 			$events->set($events->getNameSpace());
 			
 			foreach($events->getCollection() as $event){
-				$this->events[] = array(
-					"id" => $event->id,
-					"titre" => $event->titre,
-					"description" => $event->objet,
-					"debut" => $event->heuredebut,
-					"fin" => $event->heurefin,
-					"bystep" => $this->byStep($event->heuredebut,$event->heurefin),
-					"lieu" => $this->getLieu($event->bureau_id)
-				);
+				if(!$this->isInvisible($event)){
+					$this->events[] = array(
+						"id" => $event->id,
+						"titre" => $event->titre,
+						"description" => $event->objet,
+						"debut" => $event->heuredebut,
+						"fin" => $event->heurefin,
+						"bystep" => $this->byStep($event->heuredebut,$event->heurefin),
+						"lieu" => $this->getLieu($event->bureau_id)
+					);
+				}
 			}
 			$this->nbEvent = sizeof($this->events);
 		} else {
@@ -354,6 +356,19 @@ class dayView extends \arcec\Agenda\agendaViewer implements \wp\Tpl\template,\wp
 		\wp\Tpl\templateEngine::getEngine()->addContent("js",$js);
 		
 		return $this;
+	}
+	
+	/**
+	 * Détermine si l'événement est de type invisible
+	 * @param \arcec\Event $event
+	 * @return boolean
+	 */
+	private function isInvisible($event){
+		$type = new \arcec\Mapper\typeeventMapper();
+		$type->setId($event->typeevent_id);
+		$type->set($type->getNameSpace());
+		
+		return $type->getObject()->invisible == 1 ? true : false;
 	}
 	
 }

@@ -4,6 +4,7 @@
  * @author web-Projet.com (jean-luc.aubert@web-projet.com)
  * @package arcec
  * @version 1.0
+ * @version 1.1 Ne pas récupérer les événements marqués comme invisibles
 **/
 
 namespace arcec;

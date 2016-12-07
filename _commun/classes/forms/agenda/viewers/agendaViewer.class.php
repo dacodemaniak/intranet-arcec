@@ -4,6 +4,7 @@
  * @author web-Projet.com (jean-luc.aubert@web-projet.com)
  * @package \arcec\Agenda
  * @version 1.0
+ * @version 1.1 Ajout du filtre d'invisibilité des événements
 **/
 namespace arcec\Agenda;
 
@@ -327,14 +328,16 @@ abstract class agendaViewer {
 					"context" => "UPDATE",
 					"id" => $record->id					
 				);
-					
-				$events[] = array(
-						"titre" => $record->titre,
-						"description" => $record->objet,
-						"url" => \wp\Helpers\urlHelper::setAction($urlParams)
-	
-				);
-				$indice++;				
+				
+				if(!$this->isInvisible($record)){
+					$events[] = array(
+							"titre" => $record->titre,
+							"description" => $record->objet,
+							"url" => \wp\Helpers\urlHelper::setAction($urlParams)
+		
+					);
+					$indice++;	
+				}
 			}
 			
 		
@@ -414,6 +417,19 @@ abstract class agendaViewer {
 		$referentDateTime = new \DateTime($strDate);
 		
 		return $referentDateTime > $currentDateTime;
+	}
+	
+	/**
+	 * Détermine si l'événement est de type invisible
+	 * @param \arcec\Event $event
+	 * @return boolean
+	 */
+	private function isInvisible($event){
+		$type = new \arcec\Mapper\typeeventMapper();
+		$type->setId($event->typeevent_id);
+		$type->set($type->getNameSpace());
+	
+		return $type->getObject()->invisible == 1 ? true : false;
 	}
 }
 ?>
