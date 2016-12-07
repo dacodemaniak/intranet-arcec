@@ -17,6 +17,7 @@ class typeeventMapper extends \wp\dbManager\dbMapper {
 	 * @property int $bloquant Détemrine le statut bloquant ou non pour les événements de ce type
 	 * @property int $repete Détermine le statut de répétition d'un tel type d'événement
 	 * @property string $classname Classe CSS à associer à l'événement
+	 * @property int $invisible D�finit le statut de visibilit� de l'�v�nement dans les agendas
 	**/
 	
 	/**
@@ -51,7 +52,8 @@ class typeeventMapper extends \wp\dbManager\dbMapper {
 				"dureeestimee" =>  array("type" => "varchar","null"=>false,"default" => "01:00"),
 				"bloquant" => array("type"=>"tinyint","default"=>0),
 				"repete" => array("type"=>"tinyint","default"=>0),
-				"classname" => array("type"=>"varchar","null"=>true)
+				"classname" => array("type"=>"varchar","null"=>true),
+				"invisible" => array("type"=>"smallint", "default"=>0)
 		);
 	}
 	

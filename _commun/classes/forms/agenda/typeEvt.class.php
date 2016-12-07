@@ -126,6 +126,17 @@ class typeEvt extends \wp\formManager\admin{
 		
 		$this->addToFieldset($field);
 
+		$field = new \wp\formManager\Fields\checkbox();
+		$field->setId("frmInvisible")
+		->setName($this->mapper->getTableName() . "." . $this->mapper->getColumnPrefix() . "invisible")
+		->setLabel("Invisible dans le calendrier")
+		->setCss("control-label",true)
+		->setCss("col-sm-3",true)
+		->setGroupCss("col-sm-12")
+		->isChecked($this->mapper->getObject()->invisible == 1 ? true : false);
+		
+		$this->addToFieldset($field);
+		
 		$field = new \wp\formManager\Fields\text();
 		$field->setId("frmClassName")
 		->setName($this->mapper->getTableName() . "." . $this->mapper->getColumnPrefix() . "classname")
