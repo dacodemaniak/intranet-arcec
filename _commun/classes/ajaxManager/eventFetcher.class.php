@@ -3,7 +3,7 @@
  * @name eventFetcher.ajax.php Service de récupération des événements du planning
  * @author web-Projet.com (jean-luc.aubert@web-projet.com)
  * @package arcec\Ajax
- * @version 1.0
+ * @version 1.1 Ne pas r�cup�rer les �v�nements identifi�s comme invisible
 **/
 
 namespace arcec\Ajax;
@@ -125,8 +125,10 @@ class eventFetcher implements \wp\Ajax\ajax{
 					"context" => "UPDATE",
 					"id" => $event->id
 				);
+				
 				$location = \wp\Helpers\urlHelper::setAction($locationParams,false,"index.php");
-				if($this->filtered($event)){
+				
+				if($this->filtered($event) && $this->filterInvisibleType($event)){
 					$this->result[] = array(
 						"id" => $event->id,
 						"title" => $this->title($event),
@@ -211,7 +213,20 @@ class eventFetcher implements \wp\Ajax\ajax{
 	private function filterType($event){
 		return $this->filterType == $event->typeevent_id;	
 	}
-
+	
+	/**
+	 * Détermine si l'événement est de type invisible
+	 * @param \arcec\Event $event
+	 * @return boolean
+	 */
+	private function filterInvisibleType($event){
+		$type = new \arcec\Mapper\typeeventMapper();
+		$type->setId($event->typeevent_id);
+		$type->set($type->getNameSpace());
+		
+		return $type->getObject()->invisible == 0 ? true : false;
+	}
+	
 	private function filterBureau($event){
 		return $this->filterBureau == $event->bureau_id;
 	}
