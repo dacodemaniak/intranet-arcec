@@ -4,6 +4,7 @@
  * @author web-Projet.com (jean-luc.aubert@web-projet.com)
  * @package arcec\Event
  * @version 1.0
+ * @version 1.1 Déc. 2016 Modification du filtre pour ne tenir compte, sur les événements invisibles, que des personnes
 **/
 namespace arcec\Event;
 
@@ -212,7 +213,14 @@ class checkEvent {
 				$this->nb = $this->filter($this->eventMapper->getCollection());
 			}
 		} else {
-			$this->nb = $this->eventMapper->count();
+			$this->eventMapper->set($this->eventMapper->getNameSpace());
+			if($this->eventMapper->getNbRows() > 0){
+				// Ne pas tenir compte des "absences"
+				foreach($this->eventMapper->getCollection() as $event){
+					if(!$this->isInvisible($event))
+						$this->nb++;
+				}
+			}
 		}
 	}
 	
@@ -235,6 +243,19 @@ class checkEvent {
 			
 			return $personEvent->getNbRows();
 		}
+	}
+	
+	/**
+	 * Détermine si l'événement est de type invisible
+	 * @param \arcec\Event $event
+	 * @return boolean
+	 */
+	private function isInvisible($event){
+		$type = new \arcec\Mapper\typeeventMapper();
+		$type->setId($event->typeevent_id);
+		$type->set($type->getNameSpace());
+	
+		return $type->getObject()->invisible == 1 ? true : false;
 	}
 }
 ?>
