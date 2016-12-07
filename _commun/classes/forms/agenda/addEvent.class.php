@@ -862,12 +862,14 @@ class addEvent extends \wp\formManager\admin {
 		// Ajoute le calcul automatique de l'heure de fin en fonction du type d'événement
 		$this->clientRIA .= "
 			// Calcule l'heure de fin si nécessaire
-			$(\"#frmHeureDebut\").on(\"blur\",function(){
+			$(\"#frmHeureDebut\").on(\"change\",function(){
 					// Vérifie si une sélection de type a été effectuée
-					if($(\"#frmTypeEvent option:selected\").val() && $(\"#frmTypeEvent option:selected\").val() != 0){
+					if($(\"#frmTypeEvent\").val() != 0){
+						$(\"#frmHeureFin\").val(\"\"); // Efface l'heure de fin... pour repartir à 0
 						// Vérifie si une heure de fin a été saisie
 						if($(\"#frmHeureFin\").val() == \"\"){
 							// Calcule l'heure de fin en fonction de la durée estimée
+							console.log(\"Récupère la durée estimée de l'événement\");
 							$.ajax({
 									url:\"" . \wp\framework::getFramework()->getAjaxDispatcher() . "\",
 									type:\"POST\",
