@@ -168,6 +168,8 @@ class addEvent extends \wp\formManager\admin {
 					"context" => "INSERT"
 			);
 			**/
+			$this->after();
+			
 			$locationParams = array(
 				"com" => "planningViewer",
 				"date" => $eventDate->format("Y-m-d")
@@ -187,40 +189,11 @@ class addEvent extends \wp\formManager\admin {
 	}
 	
 	protected function before(){
-		echo "Traitement des données avant mise à jour : " . \wp\Helpers\urlHelper::context() . "<br />\n";
-		switch(\wp\Helpers\urlHelper::context()){
-			case "add":
-				return $this->beforeInsert();
-				break;
-					
-			case "upd":
-				return $this->beforeUpdate();
-				break;
-					
-			case "del":
-				return $this->beforeDelete();
-				break;
-		}
-	
-		return;
+		return $this->beforeInsert();
 	}
 	
 	protected function after(){
-		switch(\wp\Helpers\urlHelper::context()){
-			case "add":
-				return $this->afterInsert();
-				break;
-					
-			case "upd":
-				return $this->afterUpdate();
-				break;
-					
-			case "del":
-				return $this->afterDelete();
-				break;
-		}
-	
-		return;
+		return $this->afterInsert();
 	}
 	
 	/**
@@ -229,8 +202,10 @@ class addEvent extends \wp\formManager\admin {
 	 */
 	protected function beforeInsert(){
 		$participant = $this->getField("frmPersonnes");
-		var_dump($participant->getPostedData());
-		echo "<br />\n";
+		#begin_debug
+		#var_dump($participant->getPostedData());
+		#echo "<br />\n";
+		#end_debug
 		return $participant->getPostedData();
 	}
 	
@@ -242,14 +217,18 @@ class addEvent extends \wp\formManager\admin {
 			$participant = new \arcec\Mapper\eventpersonMapper();
 			
 			foreach($this->participants as $person){
-				var_dump($person);
-				echo "<br />\n";
+				#begin_debug
+				#var_dump($person);
+				#echo "<br />\n";
+				#end_debug
 				foreach($person as $mapper => $id){
 					$participant->id = 0;
 					$participant->person = $id;
 					$participant->mapper = $mapper;
 					$participant->event_id = $this->tableId;
-					echo "Enregistre le participant $id du mapper $mapper pour l'événement " . $this->tableId . "<br />\n";
+					#begin_debug
+					#echo "Enregistre le participant $id du mapper $mapper pour l'événement " . $this->tableId . "<br />\n";
+					#end_debug
 					$participant->save();
 				}
 			}
@@ -410,7 +389,7 @@ class addEvent extends \wp\formManager\admin {
 					}
 					// Après traitement, on stocke les éventuelles erreurs
 					$controller->toSession();
-					die();
+					//die();
 				}
 			}
 		}
