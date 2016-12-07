@@ -1,0 +1,222 @@
+@CHARSET "utf-8";
+
+/**
+* Styles spécifiques pour la gestion des tableaux
+**/
+.tablesorter-bootstrap .bootstrap-icon-unsorted{
+	background-image:url("./tablesorter/images/bootstrap-black-unsorted.png");
+}
+
+.tablesorter tbody tr{
+	background-color:#fff;
+	-webkit-transition:background-color 0.5s 0s ease-in;
+	-moz-transition:background-color 0.5s 0s ease-in;
+	transition:background-color 0.5s 0s ease-in;
+}
+.tablesorter tbody tr:hover{
+	background-color:lightblue;
+	cursor:pointer;
+}
+
+/**
+* Affichage de la liste des résultats d'un autocomplete
+**/
+ul.result-list li:hover{
+	cursor:pointer;
+}
+
+ul.result-list li:nth-child(even){
+	background-color:lightblue;
+}
+
+/**
+* Gestion des pages d'administration
+**/
+
+header.dossier div{
+	font-weight:normal;
+	font-size:1em;
+}
+header.dossier div span.label{
+	display:inline-block;
+	font-weight:normal;
+	font-size:0.8em;
+	margin-right:0.5em;
+	width:45%;
+	text-align:right;
+}
+form label[required]:after{
+	content:"(*)";
+}
+
+form fieldset.fieldset.inactive{
+	display:none;
+}
+
+.modal-body ul li.first-line{
+	margin-bottom:1em;
+}
+
+.modal-body ul li:hover{
+	background-color:rgba(128,128,128,0.7);
+}
+
+/**
+* Affichage des blocs phases de suivi du projet
+**/
+.phase{
+	border:solid 1px #e6e6e6;
+}
+/**
+* Gestion des arborescences d'administration
+**/
+#tree{
+	color:hsla(0,0%,0%,1);
+}
+
+#tree a:not(.btn){
+	color:inherit;
+}
+#tree ul{
+	list-style-type:none;
+}
+
+#tree span.tree-content{
+	margin-right:0.5em;
+}
+
+.tree-node-field ul{
+	list-style-type:none;
+}
+
+.tree-node-field ul li:first-child:before{
+	content:"+";
+}
+
+.tree-node-field ul.collapsed li:first-child:before{
+	content:"-";
+}
+
+
+/**
+* Gestion des statuts des lignes
+**/
+.tree-list li.active{
+	font-weight:bold;
+}
+
+div.admin-element.no-active{
+	display:none;
+}
+
+.anchor {
+	font-size:0.8em;
+	padding-left:0;
+}
+
+.anchor.no-active{
+	color:#6e6e6e;
+}
+
+.anchor.active{
+	font-weight:bold;
+}
+
+/**
+* Gestion des boutons two-state
+**/
+abbr.two-state{
+	border-bottom:none;
+	cursor:pointer;
+}
+.two-state{
+	width:2em;
+	border:solid 1px #fff;
+	color:#fff;
+	padding:0.3em;
+	cursor:pointer;
+}
+
+.two-state.is-disabled{
+	background-color:rgb(218,204,193);
+}
+
+.two-state.is-enabled{
+	background-color:rgb(116,102,91);
+	color:#000;
+}
+
+.two-state[aria-disabled=true]{
+	background-color:rgb(243,229,218);
+	color:#666;
+	cursor:default;
+}
+
+
+/**
+* Affichage de l'agenda
+**/
+ul.quarter li span.badge{
+	background-color:rgb(40,96,144);
+}
+
+ul.plage li span.badge a, ul.quarter li span.badge a{
+	color:#fff;
+	text-decoration:none;
+}
+
+/**
+* Gestion des boîtes de dialogues de type jquery-ui
+**/
+.ui-dialog{
+	display:none;
+}
+/**
+* Gestion des champs de type badge
+**/
+div.badge span{
+	display:inline-block;
+}
+div.badge span.action{
+	margin-left:0.5em;
+	cursor:pointer;
+}
+
+div.badge span.action:hover{
+	color:#666;
+}
+
+/**
+* Couleurs de fond pour les événements
+**/
+a.accueil-pa{
+	background-color:rgba(255,200,9,1) !important;
+	color:#333 !important;
+}
+a.entretien-direct-porteur{
+	background-color:rgba(232,108,38,1) !important;
+	color:#333 !important;	
+}
+a.entretien-tel{
+	background-color:rgba(142,192,67,1) !important;
+	color:#333 !important;	
+}
+a.formation{
+	background-color:rgba(237,57,34,1) !important;
+	color:#fff !important;	
+}
+a.conseil-administration{
+	background-color:rgba(103,116,186,1) !important;
+	color:#fff !important;	
+}
+a.reunion-exterieure{
+	background-color:rgba(240,52,53,1) !important;
+	color:#fff !important;	
+}
+
+/**
+* Boutons icônes
+**/
+a.icon-disabled span.icon-cross{
+	opacity:.5;
+}

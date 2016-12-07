@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<app_configure>
+  <name>Intranet ARCEC</name>
+  <title>Intranet ARCEC</title>
+  <version>2.0</version>
+  <encoding>UTF-8</encoding>
+  <namespace>arcec</namespace>
+  <dtd/>
+  <author>
+    <name>web-Projet.com</name>
+    <email>jean-luc.aubert@web-projet.com</email>
+  </author>
+  <uri>
+    <url>www.web-projet.com</url>
+    <url>web-projet.com</url>
+  </uri>
+  <description>Intranet de l'association ARCEC : Suivi des dossiers, Organisation, gestion de fichiers</description>
+  <keywords>
+    <keyword>ARCEC</keyword>
+    <keyword>Intranet</keyword>
+    <keyword>Dossiers</keyword>
+    <keyword>Planning</keyword>
+  </keywords>
+  <site_root></site_root>
+  <favicon>favicon.ico</favicon>
+  <default_language>FR-fr</default_language>
+  <css_framework>bootstrap</css_framework>
+</app_configure>
+

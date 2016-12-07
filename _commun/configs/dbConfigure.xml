@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<database>
+  <design>
+    <server_type>pgsql</server_type>
+    <host>127.0.0.1</host>
+    <port>5432</port>
+    <db_name>intranet_arcec</db_name>
+    <user_name>postgres</user_name>
+    <user_password>kika2000</user_password>
+    <instance_name>base</instance_name>
+    <table_prefix>arc</table_prefix>
+  </design>
+  <production>
+    <server_type>pgsql</server_type>
+    <host>arcecdbadmin.postgresql.db</host>
+    <port>5432</port>
+    <db_name>arcecdbadmin</db_name>
+    <user_name>arcecdbadmin</user_name>
+    <user_password>dB1ADm1N</user_password>
+    <instance_name>base</instance_name>
+    <table_prefix>arc</table_prefix>
+  </production>
+</database>
