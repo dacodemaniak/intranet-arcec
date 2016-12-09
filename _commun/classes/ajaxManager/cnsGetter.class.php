@@ -80,7 +80,7 @@ class cnsGetter implements \wp\Ajax\ajax{
 				
 				case "beginAt":
 				case "endAt":
-					$value = $this->date->format("Y-m-d") . " " . $value;
+					$value = $this->date->format("Y-m-d") . " " . date("H:i", $value);
 					$date = new \DateTime($value);
 					//$date = new \DateTime(date("Y-m-d H:i",$value));
 					$value = $date;
