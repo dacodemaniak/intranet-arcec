@@ -89,6 +89,8 @@ class materiel extends \wp\formManager\admin{
 		
 		$this->addToFieldset($field);
 		
+		// Ajoute le script de suppression
+		$this->clientRIA .= $this->deleteScript("libelle");
 		
 		$this->toControls();
 		
