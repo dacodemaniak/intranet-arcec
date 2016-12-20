@@ -101,7 +101,9 @@ class eventController{
 				"'" . $this->event->heuredebut . "' BETWEEN event_heuredebut AND event_heurefin"
 				);
 		$events->set("\\arcec\\Mapper\\");
-		echo "Exécute " . $events->getSQL() . " avec " . $this->event->date . "<br />\n";
+		#begin_debug
+		#echo "Exécute " . $events->getSQL() . " avec " . $this->event->date . "<br />\n";
+		#end_debug
 		if($events->getNbRows() > 0){
 			foreach($events->getCollection() as $event){
 				$person = new \arcec\Mapper\eventpersonMapper();
@@ -113,7 +115,7 @@ class eventController{
 					return true;
 				}
 				#begin_debug
-				echo $this->getPerson() . " est disponible le " . $this->event->date . " entre " . $this->event->heuredebut . " et " . $this->event->heurefin . "<br />\n";
+				#echo $this->getPerson() . " est disponible le " . $this->event->date . " entre " . $this->event->heuredebut . " et " . $this->event->heurefin . "<br />\n";
 				#end_debug
 			}
 		}

@@ -4,6 +4,7 @@
  * @author web-Projet.com (jean-luc.aubert@web-projet.com)
  * @package arcec\Ajax
  * @version 1.0
+ * @version 1.1 Déc. 2016 Ajout du filtre d'invisibilité, sauf pour le conseiller
 **/
 namespace arcec\Ajax;
 

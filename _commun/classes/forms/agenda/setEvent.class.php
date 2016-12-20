@@ -3,7 +3,8 @@
  * @name setEvent.class.php Mise à jour d'un événement
  * @author web-Projet.com (jean-luc.aubert@web-projet.com)
  * @package arcec
- * @version 1.0.1
+ * @version 1.0.1 : Ne modifier que l'événement courant
+ * @todo Vérifier le message Flash au chargement de la page... si immédiatement après une création
 **/
 
 namespace arcec;
@@ -161,7 +162,7 @@ class setEvent extends \wp\formManager\ajaxAdmin {
 		->setTriggerId("date")
 		->setMinDate()
 		->addEvent("onSelect",null)
-		->isDisabled(true)
+		->isDisabled($this->checkEvent->isPast())
 		->setRIAScript()
 		->setValue($this->event->date);
 		
@@ -692,6 +693,11 @@ class setEvent extends \wp\formManager\ajaxAdmin {
 		\wp\Tpl\templateEngine::getEngine()->addContent("js",$js);
 		*/
 		
+		// Affiche les informations sur l'événement courant si nécessaire
+		
+		$this->clientRIA .= "
+		";
+		
 		// Ajoute le script d'ouverture du datepicker
 		$this->toControls();
 		
@@ -970,19 +976,44 @@ class setEvent extends \wp\formManager\ajaxAdmin {
 		";
 		
 		/**
-		 * @todo Afficher un message pour indiquer que l'événement passé
-		 * 	ne peut pas être modifié, ni supprimé
-		 */
+		 * A partir des informations relatives à l'événement, afficher ou pas le message d'avertissement
+		**/
+		$clientMessageContent = "";
+		
+		if($this->checkEvent->isMaster()){
+			$clientMessageContent .= "<p>Cet événement est le premier événement d'une série !<br />Seul cet événement sera mis à jour.</p>";
+		}
+		if($this->checkEvent->isChildren()){
+			$clientMessageContent .= "<p>Cet événement fait partie d'une série répétée, seul cet événement sera mis à jour.</p>";
+		}
 		if($this->checkEvent->isPast()){
+			$clientMessageContent .= "<p>Vous ne pouvez plus modifier un événement passé.</p>";
+		}
+		
+		/**
+		 * Création de la fonction cliente pour afficher les messages
+		**/
+		$this->clientRIA .= "
+			// Messages éventuels à l'ouverture du formulaire
+			$(function(){
+		";
+		if($this->checkEvent->isPast()){
+			$this->clientRIA .= "	
+				$(\"#" . $this->module . " #btnSubmit\").prop(\"disabled\",true);
+			";
+		}
+		if(strlen($clientMessageContent)){
 			$this->clientRIA .= "
-				$(function(){
-						$(\"#" . $this->module . " #btnSubmit\").prop(\"disabled\",true);
-					}
-				);
+				var msgBox = $(\"#setevent-msg\");
+				var eventContent = $(\".setevent-content\");
+				eventContent.html(\"\").html(\"" . $clientMessageContent . "\");
+				msgBox.show(\"slow\");
 			";
 		}
 		
-
+		$this->clientRIA .="}
+				);
+		";
 	}
 	
 	/**
@@ -1437,7 +1468,7 @@ class setEvent extends \wp\formManager\ajaxAdmin {
 	}
 	
 	/**
-	 * Ventile les participants à l'événements dans les collections spécifiées
+	 * Ventile les participants à l'événement dans les collections spécifiées
 	 */
 	private function setParticipants(){
 		$mapper = new \arcec\Mapper\eventpersonMapper();

@@ -52,6 +52,7 @@ class updCheckEvent {
 		$this->event = $event;
 		
 		$this->isPast = \wp\Helpers\dateHelper::isPast(\wp\Helpers\dateHelper::toSQL($this->event->date,"d/m/yyyy"),substr($this->event->heurefin,0,5));
+		$this->uniqueEvent();
 	}
 	
 	/**
@@ -114,14 +115,15 @@ class updCheckEvent {
 			$this->masterEvent = $mapper->getObject();
 		} else {
 			// Cet événement est-il un événement Maître
+			$this->isMaster = true;
 			$mapper->clearSearch();
 			$searchParams[] = array("column" => "parent","operateur" => "=");
 			$searchParams[] = array("column" => "id","operateur" => "NOT IN");
 			$searchValues = array($this->event->id,$this->event->id);
 			$mapper->searchBy($searchParams, $searchValues);
-			$mapper->set($this->mapper->getNameSpace());
+			$mapper->set($mapper->getNameSpace());
 			if($mapper->getNbRows() > 0){
-				$this->isMaster = true;
+				
 				$this->masterEvent = clone $this->event;
 				foreach ($mapper->getCollection() as $object){
 					$this->childrenEvents[] = $object;
