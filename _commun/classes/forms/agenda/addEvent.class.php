@@ -4,6 +4,7 @@
  * @author web-Projet.com (jean-luc.aubert@web-projet.com)
  * @package arcec
  * @version 1.0.1
+ * @version 1.0.2 Remplacement du contrôle heure de fin par un timepicker
 **/
 
 namespace arcec;
@@ -773,7 +774,7 @@ class addEvent extends \wp\formManager\admin {
 							// Contrôle l'heure de début
 							if($(\"#frmHeureDebut\").val() != \"\"){
 								// Contrôle l'heure de fin
-								if($(\"#frmHeureFin\").val() == \"\"){
+								//if($(\"#frmHeureFin\").val() == \"\"){
 									// Calcule l'heure de fin en fonction de la durée estimée
 									$.ajax({
 											url:\"" . \wp\framework::getFramework()->getAjaxDispatcher() . "\",
@@ -796,7 +797,7 @@ class addEvent extends \wp\formManager\admin {
 													
 										}
 									);									
-								} // Fin de contrôle de l'heure de fin
+								//} // Fin de contrôle de l'heure de fin
 							}
 						}
 					}
@@ -805,22 +806,6 @@ class addEvent extends \wp\formManager\admin {
 		}
 				
 		// Heure de début
-		/*
-		$field = new \wp\formManager\Fields\hourMinute();
-		$field->setId("frmHeureDebut")
-		->setName($this->mapper->getTableName() . "." . $this->mapper->getColumnPrefix() . "heuredebut")
-		->setLabel("Heure de début")
-		->setCss("control-label",true)
-		->setCss("col-sm-3",true)
-		->setCss("form-control")
-		->setGroupCss("col-sm-12")
-		->widthClass("col-sm-3")
-		->setSeparator(":")
-		->isRequired()
-		->setRIAScript()
-		->setValue(\wp\Helpers\httpQueryHelper::get("heure") ? \wp\Helpers\httpQueryHelper::get("heure") : \arcec\Agenda\agendaViewer::currentStepTime(15,"M"))
-		;
-		*/
 		$field = new \wp\formManager\Fields\timePicker();
 		$field->setId("frmHeureDebut")
 		->setName($this->mapper->getTableName() . "." . $this->mapper->getColumnPrefix() . "heuredebut")
@@ -950,6 +935,27 @@ class addEvent extends \wp\formManager\admin {
 		";
 		
 		// Heure de fin
+		$field = new \wp\formManager\Fields\timePicker();
+		// Calcule l'heure de fin par défaut : heure de début plus 15 minutes
+		$heure = \wp\Helpers\httpQueryHelper::get("heure") ? \wp\Helpers\httpQueryHelper::get("heure") : \arcec\Agenda\agendaViewer::currentStepTime(15,"M");
+		
+		$field->setId("frmHeureFin")
+		->setName($this->mapper->getTableName() . "." . $this->mapper->getColumnPrefix() . "heurefin")
+		->setLabel("Heure de fin")
+		->setCss("control-label",true)
+		->setCss("col-sm-3",true)
+		->setCss("form-control")
+		->setGroupCss("col-sm-12")
+		->widthClass("col-sm-3")
+		->isRequired()
+		->setValue(\wp\Helpers\timeHelper::addQuarter($heure))
+		->setRIAScript()
+		;
+		
+		$this->addToFieldset($field,$fieldset);
+		$this->clientRIA .= $field->getRIAScript();
+		
+		/*
 		$field = new \wp\formManager\Fields\hourMinute();
 		$field->setId("frmHeureFin")
 		->setName($this->mapper->getTableName() . "." . $this->mapper->getColumnPrefix() . "heurefin")
@@ -967,6 +973,7 @@ class addEvent extends \wp\formManager\admin {
 			
 		$this->addToFieldset($field,$fieldset);
 		$this->clientRIA .= $field->getRIAScript();
+		*/
 		
 		// Lieu
 		$mapper = new \arcec\Mapper\bureauMapper();
