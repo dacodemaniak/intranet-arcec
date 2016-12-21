@@ -955,6 +955,25 @@ class addEvent extends \wp\formManager\admin {
 		$this->addToFieldset($field,$fieldset);
 		$this->clientRIA .= $field->getRIAScript();
 		
+		// Contrôle de validité de sélection de l'heure
+		$this->clientRIA .= "
+			$(\"#frmHeureFin\").on(\"focusin\",function(){
+					console.log(\"Entrée : \" + $(this).val());
+					$(this).data(\"val\",$(this).val());
+				}
+			).on(\"change\", function(evt){
+					console.log(\"Sélection :  \" + $(this).val() + \" à comparer à : \" + $(this).data(\"val\"));
+					var end = $(this).val();
+					var deb = $(\"#frmHeureDebut\").val();
+					if(deb >= end){
+						// Ce n'est pas possible, on restaure la valeur originale
+						$(this).val($(this).data(\"val\"));
+						evt.preventDefault();
+					}
+				}
+			);
+		";
+		
 		/*
 		$field = new \wp\formManager\Fields\hourMinute();
 		$field->setId("frmHeureFin")
