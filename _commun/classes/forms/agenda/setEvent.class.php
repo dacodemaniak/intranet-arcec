@@ -83,17 +83,25 @@ class setEvent extends \wp\formManager\ajaxAdmin {
 		$this->setTemplateName("./ajaxAdmin.tpl");
 	
 		$this->mapper = new \arcec\Mapper\eventMapper();
-		$this->mapper->setId(\wp\Helpers\httpQueryHelper::get("id"));
+		
+		if(!\wp\Helpers\httpQueryHelper::get("id") === false)
+			$this->mapper->setId(\wp\Helpers\httpQueryHelper::get("id"));
+		else 
+			$this->mapper->setId(\wp\Helpers\httpQueryHelper::get("arc_event_primary"));
+		
+		
 		$this->mapper->set($this->mapper->getNameSpace());
 		$this->event = $this->mapper->getObject();
+
 		
 		// Définit les informations annexes autour de l'événement
 		$this->isChildren = false;
 		$this->masterEvent = null;
 		$this->childrenEvents = null;
 		
+	
 		$this->checkEvent();
-		
+
 		$this->setParticipants();
 
 		$this->setMateriels();
@@ -102,6 +110,12 @@ class setEvent extends \wp\formManager\ajaxAdmin {
 	
 		\wp\Tpl\templateEngine::getEngine()->setVar("indexTitle","Agenda - " . $this->event->titre);
 
+		if(!$this->isValidate()){
+			$this->setAction(array("com" => $this->module,"context"=>\wp\Helpers\urlHelper::toContext()));
+		} else {
+			$this->process();
+		}
+		
 	}
 
 	/**
@@ -147,6 +161,14 @@ class setEvent extends \wp\formManager\ajaxAdmin {
 	 * @see \wp\formManager\admin::set()
 	 */
 	protected function set(){
+		
+		// Crée le champ caché pour le stockage de la clé primaire
+		$field = new \wp\formManager\Fields\hidden();
+		$field->setId($this->mapper->getTableName() . ".primary")
+		->setName($this->mapper->getTableName() . ".primary")
+		->setValue(\wp\Helpers\urlHelper::context("id"));
+		$this->addToFieldset($field);
+		
 		// Date de l'événement
 		$field = new \wp\formManager\Fields\datePicker();
 		$field->setId("frmDate")
@@ -724,64 +746,90 @@ class setEvent extends \wp\formManager\ajaxAdmin {
 	 * @todo Créer la méthode pour définir l'URL d'erreur (rester sur place et afficher le message)
 	 */
 	protected function process(){
-		$this->participants = $this->before();
+		$this->before();
 		
-		if($this->tableId = parent::process()){
-			$this->after();
-			
-			// Retourne à la création d'un événement
-			$locationParams = array(
-					"com" => "addEvent",
-					"context" => "INSERT"
-			);
-			$location = \wp\Helpers\urlHelper::setAction($locationParams);
-			
-			#die("Redirection vers : " . $location);
-			
-			header("Location:" . $location);
-			
-			return;
+		// Boucle sur le schéma pour alimenter le tableau des données à mettre à jour
+		foreach($this->mapper->getScheme() as $mappedColumn => $columnDetail){
+			$postedData = $this->mapper->getTableName() . "_" . $this->mapper->getColumnPrefix() . $mappedColumn;
+			if(array_key_exists($postedData, $_POST)){
+				switch($columnDetail["type"]){
+					case "date":
+						$format = "d/m/Y";
+						$oDate = \DateTime::createFromFormat($format, $_POST[$postedData]);
+						$datas[$this->mapper->getColumnPrefix().$mappedColumn] = $oDate->format("Y-m-d");
+					break;
+					
+					case "time":
+						if(!strstr($_POST[$postedData],":")){
+							$oTime = new \DateTime();
+							$oTime->setTimestamp($_POST[$postedData]);
+							$datas[$this->mapper->getColumnPrefix().$mappedColumn] = $oTime->format("H:i");
+						} else {
+							// La données est déjà un type heure
+							$datas[$this->mapper->getColumnPrefix().$mappedColumn] = $_POST[$postedData];
+						}
+					break;
+					
+					default:
+						$datas[$this->mapper->getColumnPrefix().$mappedColumn] = $_POST[$postedData];
+					break;
+				}
+			} else {
+				// Tester les clés étrangères
+				$postedData = $this->mapper->getTableName() . "_" . $mappedColumn;
+				if(array_key_exists($postedData, $_POST)){
+					$datas[$mappedColumn] = $_POST[$postedData];
+				}
+			}
 		}
-	
-		$this->sucess = false;
-		$this->failedMsg = "Une erreur est survenue lors de l'enregistrement";
-		header("Location:" . \wp\Helpers\urlHelper::toURL($this->module));
+		
+		// Crée la requête de mise à jour
+		$statement = "UPDATE " . $this->mapper->getTableName() . " SET ";
+		$placeholders = array_keys($datas);
+		foreach ($placeholders as $column){
+			$statement .= $column . "= :" . $column . ",";
+		}
+		$statement = substr($statement,0,strlen($statement)-1);
+		$statement .= " WHERE " . $this->mapper->primary() . "= :" . $this->mapper->primary() . ";";
+		
+		// Ajoute la valeur de la clé primaire dans le tableau des données
+		$datas[$this->mapper->primary()] = $_POST[$this->mapper->getTableName() . "_primary"];
+		
+		// Exécuter la requête de mise à jour...
+		$dbInstance = \wp\dbManager\dbConnect::dbInstance();
+		$query = $dbInstance->getConnexion()->prepare($statement);
+		if($query !== false){
+			// Exécute la requête préparée
+			if(!$query->execute($datas)){
+				$errorInfos = $dbInstance->getConnexion()->errorInfo();
+				$this->error = "Erreur dans la requête $update : (" . $errorInfos[1] . ") => " . $errorInfos[2];
+				echo "Erreur dans la requête : " . $query->queryString . "<br />\n";
+				var_dump($values);
+				die("Erreur dans la requête $update : (" . $errorInfos[1] . ") => " . $errorInfos[2]);
+				return false;
+			}
+		}
+		
+		$eventDate = new \DateTime($this->getField("frmDate")->getPostedData());
+		
+		$this->after();
+			
+		$locationParams = array(
+				"com" => "planningViewer",
+				"date" => $eventDate->format("Y-m-d")
+		);
+		$location = \wp\Helpers\urlHelper::setAction($locationParams);
+		
+		header("Location:" . $location);
+		
 	}
 	
 	protected function before(){
-		switch(\wp\Helpers\urlHelper::context()){
-			case "add":
-				return $this->beforeInsert();
-				break;
-					
-			case "upd":
-				return $this->beforeUpdate();
-				break;
-					
-			case "del":
-				return $this->beforeDelete();
-				break;
-		}
-	
-		return;
+		return $this->beforeUpdate();
 	}
 	
 	protected function after(){
-		switch(\wp\Helpers\urlHelper::context()){
-			case "add":
-				return $this->afterInsert();
-				break;
-					
-			case "upd":
-				return $this->afterUpdate();
-				break;
-					
-			case "del":
-				return $this->afterDelete();
-				break;
-		}
-	
-		return;
+		return $this->afterUpdate();
 	}
 	
 	/**
@@ -789,162 +837,13 @@ class setEvent extends \wp\formManager\ajaxAdmin {
 	 * @see \wp\formManager\admin::beforeInsert()
 	 */
 	protected function beforeInsert(){
-		$participant = $this->getField("frmPersonnes");
-		return $participant->getPostedData();
+		return;
 	}
 	
 	protected function beforeUpdate(){}
 	protected function beforeDelete(){}
 	
-	protected function afterInsert(){
-		if(sizeof($this->participants)){
-			$participant = new \arcec\Mapper\eventpersonMapper();
-			
-			foreach($this->participants as $person){
-				foreach($person as $mapper => $id){
-					$participant->person = $id;
-					$participant->mapper = $mapper;
-					$participant->event_id = $this->tableId;
-					$participant->save();
-				}
-			}
-		}
-		// Gérer les éventuelles répétitions
-		if(($repetition = $this->getField("frmRepetition")->getPostedData()) != 0){
-			// En fonction du type de répétition programmé
-			$dateDebut = new \DateTime($this->getField("frmDate")->getPostedData());
-			$dateFin = new \DateTime($this->getField("frmDateFin")->getPostedData());
-			
-			$dates = array();
-			
-			if(\wp\Helpers\dateHelper::compare($dateDebut,$dateFin) == 2){
-				switch($repetition){
-					case 1: // Quotidien
-						// La date de fin saisie est bien supérieure à la date de début
-						$dates = $this->getDates($dateDebut,$dateFin,new \DateInterval("P1D"));
-					break;
-					
-					case 2: // Hebdo
-						// Vérifier qu'il y a bien au moins 7 jours entre les deux dates
-						$interval = $dateDebut->diff($dateFin);
-						if($interval->format("%a") >= 7){
-							// Détermine les jours de la semaine pour lesquels l'événement doit se produire
-							$jourSemaines = $this->getJoursSemaine();
-							
-							if(sizeof($jourSemaines) == 0){
-								// On répète juste au jour courant
-								$jourSemaines[] = $dateDebut->format("N");
-							}
-							// La date de début de récupération doit être le début de la semaine suivante
-							$beginNextWeek = \wp\Helpers\dateHelper::beginNextWeek($dateDebut);
-							
-							$dates = $this->getDates($beginNextWeek,$dateFin,new \DateInterval("P1D"),$jourSemaines);
-						}
-					break;
-					
-					case 3: // Mensuel
-						$interval = $dateDebut->diff($dateFin);
-						if($interval->format("%m") >= 1){
-							// Détermine les jours de la semaine pour lesquels l'événement doit se produire
-							$jourSemaines = $this->getJoursSemaine();
-								
-							if(sizeof($jourSemaines) == 0){
-								// On répète juste au jour courant
-								$jourSemaines[] = $dateDebut->format("N");
-							}
-							$dates = $this->getDates($dateDebut,$dateFin,new \DateInterval("P1M"),$jourSemaines);
-						}
-					break;
-					
-					case 4: // Trimestriel
-						$interval = $dateDebut->diff($dateFin);
-						if($interval->format("%m") >= 3){
-							// Détermine les jours de la semaine pour lesquels l'événement doit se produire
-							$jourSemaines = $this->getJoursSemaine();
-						
-							if(sizeof($jourSemaines) == 0){
-								// On répète juste au jour courant
-								$jourSemaines[] = $dateDebut->format("N");
-							}
-							$dates = $this->getDates($dateDebut,$dateFin,new \DateInterval("P3M"),$jourSemaines);
-						}
-					break;
-					
-					case 5: // Semestriel
-						$interval = $dateDebut->diff($dateFin);
-						if($interval->format("%m") >= 6){
-							// Détermine les jours de la semaine pour lesquels l'événement doit se produire
-							$jourSemaines = $this->getJoursSemaine();
-						
-							if(sizeof($jourSemaines) == 0){
-								// On répète juste au jour courant
-								$jourSemaines[] = $dateDebut->format("N");
-							}
-							$dates = $this->getDates($dateDebut,$dateFin,new \DateInterval("P6M"),$jourSemaines);
-						}
-					break;
-					
-					case 6: // Annuel
-						$interval = $dateDebut->diff($dateFin);
-						if($interval->format("%m") >= 12){
-							// Détermine les jours de la semaine pour lesquels l'événement doit se produire
-							$jourSemaines = $this->getJoursSemaine();
-						
-							if(sizeof($jourSemaines) == 0){
-								// On répète juste au jour courant
-								$jourSemaines[] = $dateDebut->format("N");
-							}
-							$dates = $this->getDates($dateDebut,$dateFin,new \DateInterval("P12M"),$jourSemaines);
-						}
-					break;
-				}
-				
-				#begin_debug
-				#foreach ($dates as $date){
-				#	echo "Répéter le " . $date->format("Y-m-d") . "<br />\n";
-				#}
-				#die();
-				#end_debug
-				if(sizeof($dates)){
-					// Crée autant de ligne qu'il y a de dates à traiter avec les mêmes informations
-					$currentMapper = new \arcec\Mapper\eventMapper();
-					$currentMapper->setId($this->tableId);
-					$currentMapper->set($currentMapper->getNameSpace());
-					$event = $currentMapper->getObject();
-					foreach ($dates as $date){
-						$newEvent = clone $event;
-						$newEvent->id = 0;
-						$newEvent->date = $date->format("Y-m-d");
-						$newEvent->parent = $this->tableId;
-						$newId = $newEvent->save();
-						// Reporter les participants aussi
-						$personnes = new \arcec\Mapper\eventpersonMapper();
-						$personnes->searchBy("event_id",$this->tableId);
-						$personnes->set($personnes->getNameSpace());
-						if($personnes->getNbRows() > 0){
-							foreach($personnes->getCollection() as $personne){
-								$newPerson = clone $personne;
-								$newPerson->id = 0;
-								$newPerson->event_id = $newId;
-								$newPerson->save();
-							}
-						}
-					}
-				}
-			}
-		}
-		// Traite le matériel associé le cas échéant
-		$materiel = $this->getField("frmMateriel");
-		$materiels = $materiel->getPostedData();
-		if(sizeof($materiels)){
-			$mapper = new \arcec\Mapper\eventmaterielMapper();
-			foreach ($materiels as $id){
-				$mapper->event_id = $this->tableId;
-				$mapper->materiel_id = $id;
-				$mapper->save();
-			}
-		}
-	}
+	protected function afterInsert(){}
 	
 	protected function afterUpdate(){}
 	protected function afterDelete(){}

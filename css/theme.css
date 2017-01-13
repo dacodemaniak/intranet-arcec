@@ -220,3 +220,8 @@ a.reunion-exterieure{
 a.icon-disabled span.icon-cross{
 	opacity:.5;
 }
+
+/* Gestion des mises à jour d'événements */
+#setevent-msg{
+	display: none;
+}
