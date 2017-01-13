@@ -31,7 +31,9 @@ if(is_null(tpl::getEngine()->addModule(\wp\Helpers\urlHelper::getCom($app->getCo
 }
 
 // Charger le calendrier barre latérale droite
-tpl::getEngine()->addModule(array("region" => "_raside", "object" => "\arcec\Agenda\agenda", "params" => array("day"), "exclude" => array("planningViewer")));
+if($user->isLoggedIn()){
+	tpl::getEngine()->addModule(array("region" => "_raside", "object" => "\arcec\Agenda\agenda", "params" => array("day"), "exclude" => array("planningViewer")));
+}
 
 tpl::getEngine()->render();
 ?>
