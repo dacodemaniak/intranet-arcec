@@ -27,12 +27,6 @@ class getRepository {
 	private $rootDirectory;
 	
 	/**
-	 * Structure de stockage du résultat du parcours des dossiers
-	 * @var \RecursiveArrayIterator
-	 */
-	private $files;
-	
-	/**
 	 * Tableau final des résultats
 	 * @var array
 	 */
@@ -57,10 +51,12 @@ class getRepository {
 		
 		$this->process();
 		
+		$this->assoResult = $this->get("asso");
 		
-		$this->toArray($this->results, $this->files);
+		var_dump($this->assoResult);
 		
-		var_dump($this->results);
+		// Mise à jour de la base de données
+		$this->persist($this->assoResult);
 		
 	}
 	
@@ -74,6 +70,9 @@ class getRepository {
 		}
 	}
 	
+	/**
+	* @obsolete Méthode non utilisée, remplacée par array_merge_recursive de process()
+	**/
 	private function toArray(&$array, $files){
 		foreach($files as $key => $tmp){
 			if(is_string($tmp)){
@@ -96,6 +95,26 @@ class getRepository {
 			}
 			if(is_array($values)){
 				$this->get($search,$values);
+			}
+		}
+	}
+	
+	/**
+	* Persiste les données du tableau dans les tables de la base de données
+	*	Les clés correspondent aux noeuds de l'arborescence
+	*	Les valeurs correspondent aux fichiers des noeuds
+	* @param array $array : tableau initial de données à traiter
+	* @param int $nodeId : Identifiant du noeud parent
+	**/
+	private function persist($array, $nodeId=0){
+		foreach($array as $key => $content){
+			if(is_numeric($key)){
+				// Clé numérique, indique un fichier à la racine, on injecte le fichier
+				// avec l'identifiant du noeud $nodeId
+			} else {
+				// On crée un noeud dans l'arborescence avec la valeur de la clé
+				// on récupère l'id et on part en récursif
+				$this->persist($array[$key], $id);
 			}
 		}
 	}
